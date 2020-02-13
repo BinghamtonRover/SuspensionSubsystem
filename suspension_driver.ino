@@ -53,7 +53,8 @@ void setup() {
     pinMode(R_DIR_PIN, OUTPUT);
     pinMode(R_SPEED_PIN, OUTPUT);
 
-    digitalWrite(L_DIR_PIN, HIGH);
+    // Flip left for now.
+    digitalWrite(L_DIR_PIN, LOW);
     digitalWrite(R_DIR_PIN, HIGH);
 
     enable();
@@ -71,8 +72,9 @@ void write_handler(uint8_t reg, uint8_t value) {
     if (reg == 0x01) {
         analogWrite(L_SPEED_PIN, MIN_SPEED - value);
     } else if (reg == 0x02) {
-        if (value == 0) digitalWrite(L_DIR_PIN, HIGH);
-        else if (value == 1) digitalWrite(L_DIR_PIN, LOW);
+        // Flip left for now so that they all go forward.
+        if (value == 0) digitalWrite(L_DIR_PIN, LOW);
+        else if (value == 1) digitalWrite(L_DIR_PIN, HIGH);
     } else if (reg == 0x03) {
         analogWrite(R_SPEED_PIN, MIN_SPEED - value);
     } else if (reg == 0x04) {
