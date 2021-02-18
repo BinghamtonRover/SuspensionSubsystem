@@ -51,6 +51,27 @@ void setup() {
   Serial.println("ODriveArduino");
   Serial.println("Setting parameters...");
 
+for(int axis = 0; axis < 2; axis++){
+        Serial.println("Setting up left motor");
+        odrive_serial << "w axis" << axis << ".controller.config.vel_gain 0.01\n";
+        odrive_serial << "w axis" << axis << ".controller.config.vel_integrator_gain 0.05\n";
+        odrive_serial << "w axis" << axis << ".controller.config.control_mode 2\n";
+        odrive_serial << "w axis" << axis << ".controller.input_vel 10\n";
+        odrive_serial << "w axis" << axis << ".controller.config.vel_limit 100\n";
+        odrive_serial << "r axis" << axis << ".config.sensorless_ramp.current\n";  
+        float sensorless_ramp_current = odrive.readFloat();
+        sensorless_ramp_current *= 2;
+        odrive_serial << "w axis" << axis << ".motor.config.current_lim " << sensorless_ramp_current << "\n"; 
+        odrive_serial << "w axis" << axis << ".motor.config.direction 1\n";
+        float pm_flux_linkage = 5.51328895422f / (40.0f * 100.0f);
+        odrive_serial << "w axis" << axis << ".sensorless_estimator.config.pm_flux_linkage " << pm_flux_linkage << "\n";
+        odrive_serial << "w axis" << axis << ".requested_state AXIS_STATE_MOTOR_CALIBRATION\n";
+        delay(2000);
+        odrive_serial << "w axis" << axis << ".requested_state AXIS_STATE_SENSORLESS_CONTROL\n";
+      }
+    
+  
+
   // In this example we set the same parameters to both motors.
   // You can of course set them different if you want.
   // See the documentation or play around in odrivetool to see the available parameters
@@ -82,45 +103,14 @@ void loop() {
     char c = Serial.read();
     // Left motor
     if (c == 'l') {
-      for(int axis = 0; axis < 1; axis++){
-        Serial.println("Setting up left motor");
-        odrive_serial << "w axis" << axis << ".controller.config.vel_gain 0.01\n";
-        odrive_serial << "w axis" << axis << ".controller.config.vel_integrator_gain 0.05\n";
-        odrive_serial << "w axis" << axis << ".controller.config.control_mode 2\n";
-        odrive_serial << "w axis" << axis << ".controller.input_vel 10\n";
-        odrive_serial << "w axis" << axis << ".controller.config.vel_limit 100\n";
-        odrive_serial << "r axis" << axis << ".config.sensorless_ramp.current\n";  
-        float sensorless_ramp_current = odrive.readFloat();
-        sensorless_ramp_current *= 2;
-        odrive_serial << "w axis" << axis << ".motor.config.current_lim " << sensorless_ramp_current << "\n"; 
-        odrive_serial << "w axis" << axis << ".motor.config.direction 1\n";
-        float pm_flux_linkage = 5.51328895422f / (40.0f * 100.0f);
-        odrive_serial << "w axis" << axis << ".sensorless_estimator.config.pm_flux_linkage " << pm_flux_linkage << "\n";
-        odrive_serial << "w axis" << axis << ".requested_state AXIS_STATE_MOTOR_CALIBRATION\n";
-        delay(2000);
-        odrive_serial << "w axis" << axis << ".requested_state AXIS_STATE_SENSORLESS_CONTROL\n";
+      for(int i = 10, i < 51), i+=10){
+        odrive_serial << "w axis0.controller.input_vel "<<i<<"\n";
+        odrive_serial << "w axis1.controller.input_vel "<<i<<"\n";
       }
     }
     // Right motor
-    if (c == 'r') {
-      for(int axis = 1; axis < 2; axis++){
-        Serial.println("Setting up right motor");
-        odrive_serial << "w axis" << axis << ".controller.config.vel_gain 0.01\n";
-        odrive_serial << "w axis" << axis << ".controller.config.vel_integrator_gain 0.05\n";
-        odrive_serial << "w axis" << axis << ".controller.config.control_mode 2\n";
-        odrive_serial << "w axis" << axis << ".controller.input_vel 10\n";
-        odrive_serial << "w axis" << axis << ".controller.config.vel_limit 100\n";
-        odrive_serial << "r axis" << axis << ".config.sensorless_ramp.current\n";  
-        float sensorless_ramp_current = odrive.readFloat();
-        sensorless_ramp_current *= 2;
-        odrive_serial << "w axis" << axis << ".motor.config.current_lim " << sensorless_ramp_current << "\n"; 
-        odrive_serial << "w axis" << axis << ".motor.config.direction 1\n";
-        float pm_flux_linkage = 5.51328895422f / (40.0f * 100.0f);
-        odrive_serial << "w axis" << axis << ".sensorless_estimator.config.pm_flux_linkage " << pm_flux_linkage << "\n";
-        odrive_serial << "w axis" << axis << ".requested_state AXIS_STATE_MOTOR_CALIBRATION\n";
-        delay(2000);
-        odrive_serial << "w axis" << axis << ".requested_state AXIS_STATE_SENSORLESS_CONTROL\n";
-      }
+    if (c == '') {
+
     }
   }
 }
