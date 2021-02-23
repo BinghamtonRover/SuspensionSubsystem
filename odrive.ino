@@ -25,6 +25,8 @@ ODriveArduino odrive_1(odrive_serial_1);
 ODriveArduino odrive_2(odrive_serial_2);
 ODriveArduino odrive_3(odrive_serial_3);
 
+float data_dump;
+uint8_t read_request;
 uint8_t reg_dump_1;
 uint8_t reg_dump_2;
 uint8_t reg_dump_3;
@@ -113,7 +115,20 @@ void loop() {
 
 void write_handler(uint8_t reg, uint8_t value) {
   // update
-  if (reg == 0x06) {
+  if(reg == 0x01){
+    read_request = value;
+    switch (read_request)
+    {
+    case 0x01:
+      //read velocity
+      break;
+    case 0x02:
+      //read motor current
+    default:
+      break;
+    }
+  }
+  else if (reg == 0x06) {
     left_dir = value;
   }
   else if (reg == 0x07) {
