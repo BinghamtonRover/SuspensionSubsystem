@@ -120,10 +120,10 @@ void write_handler(uint8_t reg, uint8_t value) {
     switch (read_request)
     {
     case 0x01:
-      //read velocity
+      //dump velocity data
       break;
     case 0x02:
-      //read motor current
+      //dump motor current data
     default:
       break;
     }
