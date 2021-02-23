@@ -74,6 +74,15 @@ static void config_odrive(HardwareSerial& odrive_serial, ODriveArduino& odrive, 
   Serial << "Odrive " << counter <<  " : Done!\n";
 }
 
+static void stop() {
+  odrive_serial_1 << "w axis0.controller.config.input_vel 0\n";
+  odrive_serial_1 << "w axis1.controller.config.input_vel 0\n";
+  odrive_serial_2 << "w axis0.controller.config.input_vel 0\n";
+  odrive_serial_2 << "w axis1.controller.config.input_vel 0\n";
+  odrive_serial_3 << "w axis0.controller.config.input_vel 0\n";
+  odrive_serial_3 << "w axis1.controller.config.input_vel 0\n";
+}
+
 void setup() {
   // Serial to PC
   Serial.begin(115200);
@@ -82,8 +91,8 @@ void setup() {
   config_odrive(odrive_serial_2, odrive_2, 2);
   config_odrive(odrive_serial_3, odrive_3, 3);
 
+  rocs::init(ROCS_ID, ROCS_NAME, sizeof(ROCS_NAME) - 1);
   rocs::set_write_handler(write_handler);
-
   rocs::set_read_handler(read_handler);
 }
 
