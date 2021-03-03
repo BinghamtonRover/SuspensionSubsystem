@@ -32,6 +32,8 @@ uint8_t reg_dump_2;
 uint8_t reg_dump_3;
 uint8_t reg_dump_4;
 
+// combine left_dir and right_dir into a single variable = 00, 01, 10, 11
+// or set velocity to 128, MSB will determine the direction
 uint8_t left_dir;
 uint8_t left_speed;
 uint8_t right_dir;
@@ -39,7 +41,7 @@ uint8_t right_speed;
 
 int left_side_movement;
 int right_side_movement;
-float motor_current;
+
 float left_side_speed;
 float right_side_speed;
 
@@ -104,9 +106,9 @@ static void adjust_left_wheels_speed(){
   else{
     left_side_movement = left_speed;
   }
-  odrive_serial_1 << "w axis0.controller.config.input_vel " << left_side_movement << "\n";
-  odrive_serial_2 << "w axis0.controller.config.input_vel " << left_side_movement << "\n";
-  odrive_serial_3 << "w axis0.controller.config.input_vel " << left_side_movement << "\n";  
+  odrive_serial_1 << "w axis0.controller.input_vel " << left_side_movement << "\n";
+  odrive_serial_2 << "w axis0.controller.input_vel " << left_side_movement << "\n";
+  odrive_serial_3 << "w axis0.controller.input_vel " << left_side_movement << "\n";  
 }
 
 static void adjust_right_wheels_speed(){
@@ -116,9 +118,32 @@ static void adjust_right_wheels_speed(){
   else{
     right_side_movement = right_speed;
   }
-  odrive_serial_1 << "w axis1.controller.config.input_vel " << right_side_movement << "\n";
-  odrive_serial_2 << "w axis1.controller.config.input_vel " << right_side_movement << "\n";
-  odrive_serial_3 << "w axis1.controller.config.input_vel " << right_side_movement << "\n";
+  odrive_serial_1 << "w axis1.controller.input_vel " << right_side_movement << "\n";
+  odrive_serial_2 << "w axis1.controller.input_vel " << right_side_movement << "\n";
+  odrive_serial_3 << "w axis1.controller.input_vel " << right_side_movement << "\n";
+}
+
+
+static void get_left_speed(){
+  left_side_speed = 0.0f;
+  odrive_serial_1 << "r axis0.encoder.vel_estimate\n";
+  left_side_speed += odrive_1.readFloat();
+  odrive_serial_2 << "r axis0.encoder.vel_estimate\n";
+  left_side_speed += odrive_2.readFloat();
+  odrive_serial_3 << "r axis0.encoder.vel_estimate\n";
+  left_side_speed += odrive_3.readFloat();
+  left_side_speed /= 3;
+}
+
+static void get_right_speed(){
+  right_side_speed = 0.0f;
+  odrive_serial_1 << "r axis1.encoder.vel_estimate\n";
+  right_side_speed += odrive_1.readFloat();
+  odrive_serial_2 << "r axis1.encoder.vel_estimate\n";
+  right_side_speed += odrive_2.readFloat();
+  odrive_serial_3 << "r axis1.encoder.vel_estimate\n";
+  right_side_speed += odrive_3.readFloat();
+  right_side_speed /= 3;
 }
 
 void write_handler(uint8_t reg, uint8_t value) {
@@ -137,12 +162,24 @@ void write_handler(uint8_t reg, uint8_t value) {
       right_speed = value;
       break;
     case 0x09:
-      uint32_t float_to_uint32 = rocs::float_to_uint32(motor_current);
-      uint32_to_uint8_arr = rocs::uint8_batch(temp_uint32);
-      reg_dump_1 = rocs::get_uint8_from_arr(float_to_uint8_arr, 0);
-      reg_dump_2 = rocs::get_uint8_from_arr(float_to_uint8_arr, 1);
-      reg_dump_3 = rocs::get_uint8_from_arr(float_to_uint8_arr, 2);
-      reg_dump_4 = rocs::get_uint8_from_arr(float_to_uint8_arr, 3);
+      // this function call does not return anything, instead updates left_side_speed
+      get_left_speed(); 
+      float_to_uint32 = rocs::float_to_uint32(left_side_speed);
+      uint32_to_uint8_arr = rocs::uint8_batch(float_to_uint32);
+      reg_dump_1 = rocs::get_uint8_from_arr(uint32_to_uint8_arr, 0);
+      reg_dump_2 = rocs::get_uint8_from_arr(uint32_to_uint8_arr, 1);
+      reg_dump_3 = rocs::get_uint8_from_arr(uint32_to_uint8_arr, 2);
+      reg_dump_4 = rocs::get_uint8_from_arr(uint32_to_uint8_arr, 3);
+      break;
+    case 0x0A:
+      // this function call does not return anything, instead updates left_side_speed
+      get_right_speed();
+      float_to_uint32 = rocs::float_to_uint32(right_side_speed);
+      uint32_to_uint8_arr = rocs::uint8_batch(float_to_uint32);
+      reg_dump_1 = rocs::get_uint8_from_arr(uint32_to_uint8_arr, 0);
+      reg_dump_2 = rocs::get_uint8_from_arr(uint32_to_uint8_arr, 1);
+      reg_dump_3 = rocs::get_uint8_from_arr(uint32_to_uint8_arr, 2);
+      reg_dump_4 = rocs::get_uint8_from_arr(uint32_to_uint8_arr, 3);
       break;
   }
 }
@@ -175,6 +212,9 @@ void setup() {
   left_speed = 0;
   right_dir = 0;
   right_speed = 0;
+
+  left_side_speed = 0.0f;
+  right_side_speed = 0.0f;
 
   rocs::init(ROCS_ID, ROCS_NAME, strlen(ROCS_NAME));
   rocs::set_write_handler(write_handler);
